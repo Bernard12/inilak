@@ -1,20 +1,18 @@
 package lab;
 
 import io.reactivex.rxjava3.annotations.NonNull;
-import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import lab.domain.page.Page;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class Application {
     public static void main(String[] args) throws Exception {
@@ -36,18 +34,15 @@ public class Application {
             page.setExtract(text);
             return page;
         };
-        // Observable.fromArray("Категория:Москва")
 
         PageWriter pageWriter = new PageWriter("C:\\Users\\ivan\\IdeaProjects\\kalinin\\parsed.txt");
         @NonNull Disposable disposable =
                 Flowable.fromIterable(categories)
-//                        .take(10)
                         .parallel(15)
                         .runOn(Schedulers.from(ForkJoinPool.commonPool()))
                         .flatMap(titleLoaders::loadTitles, false, 10000)
                         .flatMap(pagesLoader::loadTexts, false, 10000)
                         .map(formatter::apply)
-//                        .doAfterNext(System.out::println)
                         .sequential()
                         .subscribe(pageWriter::write, Throwable::printStackTrace, pageWriter::close);
 

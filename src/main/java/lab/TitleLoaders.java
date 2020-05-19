@@ -5,7 +5,6 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.core.ObservableEmitter;
 import lab.domain.title.TitlePage;
 import lab.domain.title.TitleResult;
 
@@ -74,16 +73,6 @@ public class TitleLoaders {
             return this.loadTitles(category);
         }
     }
-
-/*
-    private void sendNext(TitleResult result, ObservableEmitter<String> observer) {
-        Observable.fromIterable(result.getQuery().getCategorymembers())
-                .map(TitlePage::getTitle)
-                .filter(x -> !x.contains(":"))
-//                .doAfterNext(System.out::println)
-                .forEach(observer::onNext);
-    }
-*/
 
     private TitleResult sendRequest(HttpRequest request) throws Exception {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());

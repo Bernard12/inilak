@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.core.ObservableEmitter;
 import lab.domain.page.Page;
 import lab.domain.page.Result;
 
@@ -14,7 +13,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 public class PagesLoader {
     private final static HttpClient client =
@@ -29,7 +27,6 @@ public class PagesLoader {
                 "https://ru.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&titles=%s&utf8=1&formatversion=2&explaintext=1&exsectionformat=plain",
                 URLEncoder.encode(title, StandardCharsets.UTF_8.toString())
         );
-//        System.out.println(String.format("[Debug]: URL %s", URL));
         try {
             HttpRequest request = HttpRequest.newBuilder(new URI(URL)).build();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
