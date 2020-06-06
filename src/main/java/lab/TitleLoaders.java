@@ -29,7 +29,7 @@ public class TitleLoaders {
                     URLEncoder.encode(category, StandardCharsets.UTF_8.toString())
             );
 
-            System.out.println(String.format("[Debug]: (%s) URL %s", category, URL));
+//            System.out.println(String.format("[Debug]: (%s) URL %s", category, URL));
             HttpRequest request = HttpRequest.newBuilder(new URI(URL)).build();
             // todo get ALL title with continue
             TitleResult result = sendRequest(request);

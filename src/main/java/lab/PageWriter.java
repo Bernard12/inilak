@@ -20,7 +20,6 @@ public class PageWriter {
         writer.write("\n");
         writer.write(page.getExtract());
         writer.write("\n");
-        writer.flush();
     }
 
     public void close() throws IOException {

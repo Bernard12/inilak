@@ -30,7 +30,7 @@ public class Application {
             String text = page
                     .getExtract()
                     .replaceAll("[#*]", "")
-                    .replaceAll("\\n", " ");
+                    .replaceAll("\n", " ");
             page.setExtract(text);
             return page;
         };
@@ -38,10 +38,11 @@ public class Application {
         PageWriter pageWriter = new PageWriter("C:\\Users\\ivan\\IdeaProjects\\kalinin\\parsed.txt");
         @NonNull Disposable disposable =
                 Flowable.fromIterable(categories)
-                        .parallel(15)
+                        .doAfterNext(System.out::println)
+                        .parallel(100)
                         .runOn(Schedulers.from(ForkJoinPool.commonPool()))
-                        .flatMap(titleLoaders::loadTitles, false, 10000)
-                        .flatMap(pagesLoader::loadTexts, false, 10000)
+                        .flatMap(titleLoaders::loadTitles)
+                        .flatMap(pagesLoader::loadTexts)
                         .map(formatter::apply)
                         .sequential()
                         .subscribe(pageWriter::write, Throwable::printStackTrace, pageWriter::close);
