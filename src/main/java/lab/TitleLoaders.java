@@ -1,38 +1,31 @@
 package lab;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Observable;
 import lab.domain.title.TitlePage;
 import lab.domain.title.TitleResult;
+import lab.wikiapi.WikiTitlesService;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
-import java.net.URI;
-import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class TitleLoaders {
-    private final static HttpClient client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
-    private final static ObjectMapper mapper = new ObjectMapper().registerModule(new Jdk8Module());
+    private final static Retrofit retrofit = new Retrofit
+            .Builder()
+            .baseUrl("https://ru.wikipedia.org")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build();
+    private final static WikiTitlesService service = retrofit.create(WikiTitlesService.class);
 
     Flowable<String> loadTitles(String category) throws Exception {
         try {
-
-            String URL = String.format(
-                    "https://ru.wikipedia.org/w/api.php?action=query&format=json&list=categorymembers&cmtitle=%s&cmlimit=max",
-                    URLEncoder.encode(category, StandardCharsets.UTF_8.toString())
-            );
-
-//            System.out.println(String.format("[Debug]: (%s) URL %s", category, URL));
-            HttpRequest request = HttpRequest.newBuilder(new URI(URL)).build();
-            // todo get ALL title with continue
-            TitleResult result = sendRequest(request);
+            TitleResult result = service
+                    .getTitles(category, null)
+                    .execute()
+                    .body();
 
             List<String> titles =
                     result.getQuery()
@@ -42,20 +35,18 @@ public class TitleLoaders {
                             .filter(x -> !x.contains(":"))
                             .collect(Collectors.toList());
 
-            if (result.getContinueOptional().isEmpty()) {
+            if (result.getContinueOptional() == null) {
                 return Observable.fromIterable(titles).toFlowable(BackpressureStrategy.BUFFER);
             }
 
-            String next = result.getContinueOptional().get().getCmcontinue();
+            String next = result.getContinueOptional().getCmcontinue();
             boolean goon = true;
             while (goon) {
-                String NEXT_URL = String.format("%s&cmcontinue=%s", URL, URLEncoder.encode(next, StandardCharsets.UTF_8.toString()));
-                HttpRequest next_request = HttpRequest.newBuilder(new URI(NEXT_URL)).build();
-                TitleResult next_result = sendRequest(next_request);
-                if (next_result.getContinueOptional().isEmpty()) {
+                TitleResult next_result = service.getTitles(category, next).execute().body();
+                if (next_result.getContinueOptional() == null) {
                     goon = false;
                 } else {
-                    next = next_result.getContinueOptional().get().getCmcontinue();
+                    next = next_result.getContinueOptional().getCmcontinue();
                 }
                 titles.addAll(
                         next_result
@@ -69,17 +60,8 @@ public class TitleLoaders {
             }
 
             return Observable.fromIterable(titles).toFlowable(BackpressureStrategy.BUFFER);
-        } catch (Exception e) {
+        } catch (Exception exception) {
             return this.loadTitles(category);
         }
-    }
-
-    private TitleResult sendRequest(HttpRequest request) throws Exception {
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        return parse(response);
-    }
-
-    private TitleResult parse(HttpResponse<String> response) throws Exception {
-        return mapper.readValue(response.body(), TitleResult.class);
     }
 }
