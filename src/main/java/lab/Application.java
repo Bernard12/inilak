@@ -35,19 +35,17 @@ public class Application {
             return page;
         };
 
-        PageWriter pageWriter = new PageWriter("C:\\Users\\ivan\\IdeaProjects\\kalinin\\parsed3.txt");
+        PageWriter pageWriter = new PageWriter("C:\\Users\\ivan\\IdeaProjects\\kalinin\\parsed.txt");
         @NonNull Disposable disposable =
                 Flowable.fromIterable(categories)
-                        .take(10)
                         .doAfterNext(System.out::println)
-                        .parallel(5)
+                        .parallel(50)
                         .runOn(Schedulers.from(ForkJoinPool.commonPool()))
                         .flatMap(titleLoaders::loadTitles)
                         .flatMap(pagesLoader::loadTexts)
                         .map(formatter::apply)
                         .sequential()
                         .subscribe(pageWriter::write, Throwable::printStackTrace, pageWriter::close);
-//        titleLoaders.loadTitles("Категория:Москва");
 
         // ignore
         Scanner sc = new Scanner(System.in);
