@@ -5,6 +5,7 @@ import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import lab.domain.page.Page;
+import lab.services.categories.CategoriesDownloadService;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -16,6 +17,14 @@ import java.util.function.Function;
 
 public class Application {
     public static void main(String[] args) throws Exception {
+
+        test2();
+        // ignore
+        Scanner sc = new Scanner(System.in);
+        sc.next();
+    }
+
+    private static void test1() throws Exception {
         List<String> categories = new ArrayList<>();
         BufferedReader reader = new BufferedReader(new FileReader("C:\\Users\\ivan\\IdeaProjects\\kalinin\\good-cats.txt"));
         String line;
@@ -55,8 +64,11 @@ public class Application {
                             pageWriter.writeMetadata(x);
                         }, Throwable::printStackTrace, pageWriter::close);
 
-        // ignore
-        Scanner sc = new Scanner(System.in);
-        sc.next();
+    }
+
+    private static void test2() throws Exception {
+        CategoriesDownloadService service = new CategoriesDownloadService();
+        Disposable subscribe = service.getAllCategories("Категория:Музыка")
+                .subscribe(System.out::println);
     }
 }
