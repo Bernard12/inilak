@@ -17,7 +17,7 @@ import java.util.function.Function;
 public class Application {
     public static void main(String[] args) throws Exception {
         List<String> categories = new ArrayList<>();
-        BufferedReader reader = new BufferedReader(new FileReader("C:\\Users\\ivan\\IdeaProjects\\kalinin\\cats.txt"));
+        BufferedReader reader = new BufferedReader(new FileReader("C:\\Users\\ivan\\IdeaProjects\\kalinin\\good-cats.txt"));
         String line;
         while ((line = reader.readLine()) != null) {
             categories.add(line);
@@ -35,9 +35,13 @@ public class Application {
             return page;
         };
 
-        PageWriter pageWriter = new PageWriter("C:\\Users\\ivan\\IdeaProjects\\kalinin\\parsed.txt");
+        PageWriter pageWriter = new PageWriter(
+                "C:\\Users\\ivan\\IdeaProjects\\kalinin\\parsed.txt",
+                "C:\\Users\\ivan\\IdeaProjects\\kalinin\\parsed-meta.txt"
+        );
         @NonNull Disposable disposable =
                 Flowable.fromIterable(categories)
+                        .filter(x -> x.replaceAll(":", "").length() == x.length() - 1)
                         .doAfterNext(System.out::println)
                         .parallel(50)
                         .runOn(Schedulers.from(ForkJoinPool.commonPool()))
@@ -45,7 +49,11 @@ public class Application {
                         .flatMap(pagesLoader::loadTexts)
                         .map(formatter::apply)
                         .sequential()
-                        .subscribe(pageWriter::write, Throwable::printStackTrace, pageWriter::close);
+                        .distinct()
+                        .subscribe(x -> {
+                            pageWriter.write(x);
+                            pageWriter.writeMetadata(x);
+                        }, Throwable::printStackTrace, pageWriter::close);
 
         // ignore
         Scanner sc = new Scanner(System.in);
