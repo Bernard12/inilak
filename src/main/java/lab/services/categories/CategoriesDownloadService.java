@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public class CategoriesDownloadService {
     private final static Retrofit retrofit = new Retrofit
             .Builder()
-            .baseUrl("https://ru.wikipedia.org")
+            .baseUrl("https://en.wikipedia.org")
             .addConverterFactory(GsonConverterFactory.create())
             .build();
     private final static WikiCategoriesService service = retrofit.create(WikiCategoriesService.class);

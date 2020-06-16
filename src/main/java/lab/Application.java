@@ -8,7 +8,9 @@ import lab.domain.page.Page;
 import lab.services.categories.CategoriesDownloadService;
 
 import java.io.BufferedReader;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -17,7 +19,6 @@ import java.util.function.Function;
 
 public class Application {
     public static void main(String[] args) throws Exception {
-
         test2();
         // ignore
         Scanner sc = new Scanner(System.in);
@@ -26,7 +27,7 @@ public class Application {
 
     private static void test1() throws Exception {
         List<String> categories = new ArrayList<>();
-        BufferedReader reader = new BufferedReader(new FileReader("C:\\Users\\ivan\\IdeaProjects\\kalinin\\good-cats.txt"));
+        BufferedReader reader = new BufferedReader(new FileReader("C:\\Users\\ivan\\IdeaProjects\\kalinin\\kekus.txt"));
         String line;
         while ((line = reader.readLine()) != null) {
             categories.add(line);
@@ -67,8 +68,9 @@ public class Application {
     }
 
     private static void test2() throws Exception {
+        System.setOut(new PrintStream(new FileOutputStream("C:\\Users\\ivan\\IdeaProjects\\kalinin\\kekus.txt")));
         CategoriesDownloadService service = new CategoriesDownloadService();
-        Disposable subscribe = service.getAllCategories("Категория:Музыка")
-                .subscribe(System.out::println);
+        Disposable subscribe = service.getAllCategories("Category:Cinema_of_the_United_States")
+                .subscribe(System.out::println, Throwable::printStackTrace, () -> System.err.println("Bye"));
     }
 }
